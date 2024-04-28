@@ -1,0 +1,51 @@
+After the last updates the nfs-server stopped working:
+
+A dependency job for nfs-server.service failed. See 'journalctl -xe' for details.
+
+● nfs-server.service - NFS server and services
+Loaded: loaded (/usr/lib/systemd/system/nfs-server.service; disabled; vendor preset: disabled)
+Drop-In: /run/systemd/generator/nfs-server.service.d
+└─order-with-mounts.conf
+Active: inactive (dead)
+
+Dec 01 21:22:03 b1 systemd[1]: Dependency failed for NFS server and services.
+Dec 01 21:22:03 b1 systemd[1]: nfs-server.service: Job nfs-server.service/start failed with result 'dependency'.
+
+These dependency services failed:
+
+● nfs-mountd.service - NFS Mount Daemon
+Loaded: loaded (/usr/lib/systemd/system/nfs-mountd.service; static; vendor preset: disabled)
+Active: failed (Result: exit-code) since Sun 2019-12-01 21:22:03 WITA; 1min 7s ago
+Process: 2363 ExecStart=/usr/sbin/rpc.mountd (code=exited, status=1/FAILURE)
+
+Dec 01 21:22:03 b1 systemd[1]: Starting NFS Mount Daemon...
+Dec 01 21:22:03 b1 rpc.mountd[2363]: Cannot register service: RPC: Authentication error; why = Client credential too weak
+Dec 01 21:22:03 b1 rpc.mountd[2363]: unable to register (mountd, 1, udp).
+Dec 01 21:22:03 b1 systemd[1]: nfs-mountd.service: Control process exited, code=exited, status=1/FAILURE
+Dec 01 21:22:03 b1 systemd[1]: nfs-mountd.service: Failed with result 'exit-code'.
+Dec 01 21:22:03 b1 systemd[1]: Failed to start NFS Mount Daemon.
+
+● rpc-statd.service - NFS status monitor for NFSv2/3 locking.
+Loaded: loaded (/usr/lib/systemd/system/rpc-statd.service; static; vendor preset: disabled)
+Active: failed (Result: exit-code) since Sun 2019-12-01 21:22:03 WITA; 2min 25s ago
+Process: 2352 ExecStart=/usr/sbin/rpc.statd (code=exited, status=1/FAILURE)
+
+Dec 01 21:22:03 b1 systemd[1]: Starting NFS status monitor for NFSv2/3 locking....
+Dec 01 21:22:03 b1 rpc.statd[2354]: Version 2.3.4 starting
+Dec 01 21:22:03 b1 rpc.statd[2354]: Flags:
+Dec 01 21:22:03 b1 rpc.statd[2354]: Failed to read /run/nfs/state: Success
+Dec 01 21:22:03 b1 rpc.statd[2354]: Initializing NSM state
+Dec 01 21:22:03 b1 rpc.statd[2354]: Running as root. chown /run/nfs to choose different user
+Dec 01 21:22:03 b1 rpc.statd[2354]: unable to register (statd, 1, udp).
+Dec 01 21:22:03 b1 systemd[1]: rpc-statd.service: Control process exited, code=exited, status=1/FAILURE
+Dec 01 21:22:03 b1 systemd[1]: rpc-statd.service: Failed with result 'exit-code'.
+Dec 01 21:22:03 b1 systemd[1]: Failed to start NFS status monitor for NFSv2/3 locking..
+
+I can do a workaround with:
+
+sudo systemctl stop rpcbind
+sudo -i rpcbind -i -w
+sudo systemctl start rpcbind
+sudo systemctl start nfs-server
+
+but I do not think it a good solution, thx
